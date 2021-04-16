@@ -51,7 +51,7 @@ def read_input_file(path, min_size=None, max_size=None):
         for node, val in G.degree():
             assert val >= 2, 'Every vertex in the input graph should have degree atleast 2'
             
-        if min_size is not None
+        if min_size is not None:
             assert min_size < len(G), 'Graph doesn\'t have enough nodes for it\'s size'
             
         if max_size is not None:
