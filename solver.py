@@ -1,5 +1,5 @@
 import networkx as nx
-from parse import read_input_file, write_output_file
+from parse import read_input_file, validate_file, write_output_file
 from utils import is_valid_solution, calculate_score
 import sys
 from os.path import basename, normpath
@@ -15,6 +15,13 @@ def solve(G):
         k: list of edges to remove
     """
     pass
+
+if __name__ == '__main__':
+    assert len(sys.argv) == 2
+    path = sys.argv[1]
+    if validate_file(path):
+        G = read_input_file(path)
+        print("Valid")
 
 
 # Here's an example of how to run your solver.
