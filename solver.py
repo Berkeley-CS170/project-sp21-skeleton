@@ -60,6 +60,13 @@ def weight(G, v):
 # the shortest path, that don't disconnect G until gone, 
 # then remove edges. If not all c is used up, after edges
 # are removed, check if more nodes can be deleted
+# more intelligent heuristics, check if there are very heavy edges
+# on a node, like 80+ heavy, and only delete if there are no very
+# heavy edges
+# Can we brute force solve the small graphs?
+# Do complete graphs have special properties to exploit? (since
+# I'm pretty sure everybody generated their big graphs using complete
+# ones lol)
 
 
 
