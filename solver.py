@@ -33,6 +33,35 @@ def dijkstra(G):
                 prev[v] = u
     return dist, prev
 
+def explore(G, v, visited):
+    visited[v] = True
+    for u in G.adj[v]:
+        if not visited[u]:
+            explore(G, u, visited)
+
+def connected(G):
+    visited = {}
+    for v in G.nodes:
+        visited[v] = False
+    explore(G, 0, visited)
+    for v in visited.values():
+        if not v:
+            return False
+    return True 
+
+#measures total weight of edges summed 
+def weight(G, v):
+    w = 0
+    for u in G.adj[v]:
+        w += G[v][u]['weight']
+    return w
+
+#idea: greedy heuristics: remove the lightest nodes on the 
+# the shortest path, that don't disconnect G until gone, 
+# then remove edges. If not all c is used up, after edges
+# are removed, check if more nodes can be deleted
+
+
 
 
 #heuristic of 0.001 will guarantee correct answer
