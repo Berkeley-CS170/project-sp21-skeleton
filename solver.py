@@ -67,6 +67,9 @@ def weight(G, v):
 # Do complete graphs have special properties to exploit? (since
 # I'm pretty sure everybody generated their big graphs using complete
 # ones lol)
+# More advanced heuristics: measuring the shortest path v from s to v
+# and t to v, and then trying to find the lightest edges in either
+# side and deleting them/maximize distance on two ends
 
 
 
