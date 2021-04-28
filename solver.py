@@ -70,6 +70,18 @@ def weight(G, v):
 # More advanced heuristics: measuring the shortest path v from s to v
 # and t to v, and then trying to find the lightest edges in either
 # side and deleting them/maximize distance on two ends
+# snip bridges on circular graphs
+
+#observations: optimal edges removed between different values of k 
+# seem largely unrelated
+# for very connected graphs (maybe take degree into account)
+# it seems best work backwards and force the path into a long
+# one
+# observations: the best nodes to remove seem to have an edge
+# that needs removal
+# there's the game tree alpha-beta pruning approach? since 
+# it seems you can union together results cohesively
+# special case: circular graphs, just snip connection between start and end
 
 
 
