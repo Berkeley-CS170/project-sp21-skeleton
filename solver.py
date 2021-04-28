@@ -56,6 +56,43 @@ def weight(G, v):
         w += G[v][u]['weight']
     return w
 
+#method to get shortest nodes from prev
+def shortest_path(G, prev):
+    t = max(G.nodes)
+    path = [t]
+    while t != 0:
+        path.append(prev[t])
+    return path
+
+def smart_greedy(G):
+    if len(G.nodes) <= 30:
+        k = 15, c = 1
+    else if len(G.nodes) <= 50:
+        k = 50, c = 3
+    else:
+        k = 100, c = 5
+    d, p = dijkstra(G)
+    shortest = shortest_path(G, p)
+    while k > 0:
+        u = shortest[0]
+        v = shortest[1]
+        min_e = (u, v)
+        for i in range(1, len(shortest) - 1):
+            u = shortest[i]
+            v = shortest[i + 1]
+            e = (u, v)
+            if G[u][v]['weight'] < G[min_e[0]][min_e[1]]['weight']:
+                min_e = e
+        G.remove_edge(min_e[0], min_e[1])
+        if connected(G):
+            #do something
+        d, p = dijkstra(G)
+        shortest = shortest_path(G, p)
+        k -= 1
+
+def mincut_solve(G):
+    pass
+
 #idea: greedy heuristics: remove the lightest nodes on the 
 # the shortest path, that don't disconnect G until gone, 
 # then remove edges. If not all c is used up, after edges
@@ -83,9 +120,6 @@ def weight(G, v):
 # it seems you can union together results cohesively
 # special case: circular graphs, just snip connection between start and end
 
-
-
-
 #heuristic of 0.001 will guarantee correct answer
 def LPA_star(G):
     pass
@@ -94,9 +128,15 @@ def LPA_star(G):
 #the one that MUST be modified otherwise no change
 
 #preprocess? That is if there s or t are degree one, cut them
-# in a preprocess?
+# in a preprocess? !!!!!!!!!!!!
+
+def preprocess(G):
+    pass
 
 def solve(G):
+    #small k = 15, c = 1
+    #medium k = 50, c = 3
+    #large k = 100, c = 5
     """
     Args:
         G: networkx.Graph
