@@ -24,13 +24,17 @@ def dijkstra(G):
     for v in dist.keys():
         fib_nodes[v] = q.insert(dist[v], v)
     while q.total_nodes > 0:
+        print(q.total_nodes)
         u = q.extract_min().value
+        print(u)
         for v in G.adj[u]:
             last_dist = dist[v]
             dist[v] = min(dist[v], dist[u] + G[u][v]['weight'])
+            print('wtf') # something is pausing Dijkstra
             if dist[v] < last_dist:
                 q.decrease_key(fib_nodes[v], dist[v])
                 prev[v] = u
+        print('finished')
     return dist, prev
 
 def explore(G, v, visited):
@@ -62,33 +66,57 @@ def shortest_path(G, prev):
     path = [t]
     while t != 0:
         path.append(prev[t])
+        t = prev[t]
     return path
 
 def smart_greedy(G):
     if len(G.nodes) <= 30:
-        k = 15, c = 1
-    else if len(G.nodes) <= 50:
-        k = 50, c = 3
+        k = 15
+        c = 1
+    elif len(G.nodes) <= 50:
+        k = 50
+        c = 3
     else:
-        k = 100, c = 5
+        k = 100
+        c = 5
+    t = max(G.nodes)
+    print('Dijkstra running ...')
     d, p = dijkstra(G)
+    original = d[t]
     shortest = shortest_path(G, p)
+    print(shortest)
+    edges = []
     while k > 0:
-        u = shortest[0]
-        v = shortest[1]
-        min_e = (u, v)
-        for i in range(1, len(shortest) - 1):
+        print(k)
+        max_increase = 0
+        curr_dist = d[t]
+        for i in range(0, len(shortest) - 1):
             u = shortest[i]
             v = shortest[i + 1]
-            e = (u, v)
-            if G[u][v]['weight'] < G[min_e[0]][min_e[1]]['weight']:
-                min_e = e
-        G.remove_edge(min_e[0], min_e[1])
-        if connected(G):
-            #do something
-        d, p = dijkstra(G)
-        shortest = shortest_path(G, p)
-        k -= 1
+            w = G[u][v]['weight']
+            G.remove_edge(u, v)
+            if not connected(G):
+                G.add_edge(u, v, weight=w)
+                continue
+            candidate_d, candidate_p = dijkstra(G)
+            if candidate_d[t] - curr_dist > max_increase:
+                best_d, best_p = candidate_d, candidate_p
+                e = (u, v)
+                max_increase = candidate_d[t] - curr_dist
+            G.add_edge(u, v, weight=w)
+        if max_increase > 0:
+            edges.append(e)
+            G.remove_edge(e[0], e[1])
+            d, p = best_d, best_p
+            shortest = shortest_path(G, p)
+            k -= 1
+        else:
+            break
+    print(original, d[t])
+    print(edges)
+    print(shortest)
+    return edges, shortest
+        
 
 def mincut_solve(G):
     pass
