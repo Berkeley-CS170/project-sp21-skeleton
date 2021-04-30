@@ -10,10 +10,7 @@ if __name__ == '__main__':
     assert len(sys.argv) == 2
     path = sys.argv[1]
     G = read_input_file(path)
-    print('Dijkstra running ...')
-    d, p = dijkstra(G)
-    print('Dijkstra finished')
-    #edges, shortest = smart_greedy(G)
+    edges, shortest = smart_greedy(G)
     """d, p = dijkstra(G)
     t = max(G.nodes)
     print(d[t])

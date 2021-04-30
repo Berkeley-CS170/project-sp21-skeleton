@@ -5,11 +5,19 @@ import sys
 from os.path import basename, normpath
 import glob
 from fibbonaciheap import FibonacciHeap as fib_heap
+from fibheap import *
+
+class GraphNode(Node):
+    def __init__(self, key, p=None, left=None, right=None,
+                 child=None, mark = None):
+        self.value = key[1]
+        super().__init__(key[0], p, left, right, child, mark)
+
 
 #modified version which returns all minimum paths?
 #definitely need both vertex AND edge paths
 #remember s is always 0 and t is always max vertex
-def dijkstra(G):
+def dijkstra(G, s):
     dist = {}
     prev = {}
     # since python numbers are unbounded, this caps the
@@ -17,24 +25,22 @@ def dijkstra(G):
     max_val = 100 * len(G.nodes)
     for v in G.nodes:
         dist[v] = max_val
-    dist[0] = 0
-    q = fib_heap()
+    dist[s] = 0
+    q = makefheap()
     # keep dictionary of fib nodes for decreasekey
     fib_nodes = {}
     for v in dist.keys():
-        fib_nodes[v] = q.insert(dist[v], v)
-    while q.total_nodes > 0:
-        print(q.total_nodes)
-        u = q.extract_min().value
-        print(u)
+        fib_nodes[v] = GraphNode((dist[v], v))
+        q.insert(fib_nodes[v])
+    while q.num_nodes:
+        node = q.extract_min()
+        u = node.value
         for v in G.adj[u]:
             last_dist = dist[v]
             dist[v] = min(dist[v], dist[u] + G[u][v]['weight'])
-            print('wtf') # something is pausing Dijkstra
             if dist[v] < last_dist:
                 q.decrease_key(fib_nodes[v], dist[v])
                 prev[v] = u
-        print('finished')
     return dist, prev
 
 def explore(G, v, visited):
@@ -69,6 +75,8 @@ def shortest_path(G, prev):
         t = prev[t]
     return path
 
+#termination should happen only if all nodes disconnect, otherwise continue
+#in the case that the new shortest path allows us to remove more edges
 def smart_greedy(G):
     if len(G.nodes) <= 30:
         k = 15
@@ -80,16 +88,16 @@ def smart_greedy(G):
         k = 100
         c = 5
     t = max(G.nodes)
-    print('Dijkstra running ...')
-    d, p = dijkstra(G)
+    d, p = dijkstra(G, )
     original = d[t]
     shortest = shortest_path(G, p)
     print(shortest)
     edges = []
     while k > 0:
-        print(k)
+        #print(k)
         max_increase = 0
         curr_dist = d[t]
+        first_connected = None
         for i in range(0, len(shortest) - 1):
             u = shortest[i]
             v = shortest[i + 1]
@@ -99,6 +107,9 @@ def smart_greedy(G):
                 G.add_edge(u, v, weight=w)
                 continue
             candidate_d, candidate_p = dijkstra(G)
+            if not first_connected:
+                first_connected = (u, v)
+                first_d, first_p = candidate_d, candidate_p
             if candidate_d[t] - curr_dist > max_increase:
                 best_d, best_p = candidate_d, candidate_p
                 e = (u, v)
@@ -109,6 +120,12 @@ def smart_greedy(G):
             G.remove_edge(e[0], e[1])
             d, p = best_d, best_p
             shortest = shortest_path(G, p)
+            k -= 1
+        elif first_connected:
+            edges.append(first_connected)
+            G.remove_edge(first_connected[0], first_connected[1])
+            d, p = first_d, first_p
+            shortest = shortest_path(G, first_p)
             k -= 1
         else:
             break
@@ -158,8 +175,6 @@ def LPA_star(G):
 #preprocess? That is if there s or t are degree one, cut them
 # in a preprocess? !!!!!!!!!!!!
 
-def preprocess(G):
-    pass
 
 def solve(G):
     #small k = 15, c = 1
