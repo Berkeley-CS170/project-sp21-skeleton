@@ -90,7 +90,7 @@ def smart_greedy(G):
         c = 5
     start_d, start_p = dijkstra(G)
     starting_shortest = shortest_path(G, start_p)
-    #print("starting dist:", start_d[max(G_node.nodes)])
+    print("starting dist:", start_d[max(G_node.nodes)])
 
     shortest = starting_shortest[1:len(starting_shortest) - 1]
     nf_nodes, shortest, d, p = cut_nodes(G_node, shortest, start_d, start_p, c)
@@ -110,12 +110,27 @@ def smart_greedy(G):
         result = edge_first
         nodes = ef_nodes
         edges = ef_edges
-    #print("resulting dist:", result)
+    print("resulting dist:", result)
     #print("nodes:", nodes)
     #print("edges:", edges)
     return nodes, edges
 
-    
+def mixed_greedy(G):
+    if len(G.nodes) <= 30:
+        k = 15
+        c = 1
+    elif len(G.nodes) <= 50:
+        k = 50
+        c = 3
+    else:
+        k = 100
+        c = 5
+    d, p = dijkstra(G)
+    shortest = shortest_path(G, p)
+    print("starting dist:", d[max(G.nodes)])
+    nodes, edges, shortest, d, p = cut_both(G, shortest, d, p, k, c)
+    print("resulting dist:", d[max(G.nodes)])
+    return nodes, edges
 
 def cut_edges(G, shortest, d, p, k):
     t = max(G.nodes)
@@ -127,9 +142,9 @@ def cut_edges(G, shortest, d, p, k):
         max_increase = 0
         curr_dist = d[t]
         first_connected = None
-        for i in range(0, len(shortest) - 1):
+        for i in range(len(shortest) - 1, 0, -1) :
             u = shortest[i]
-            v = shortest[i + 1]
+            v = shortest[i - 1]
             w = G[u][v]['weight']
             G.remove_edge(u, v)
             if not connected(G):
@@ -173,7 +188,8 @@ def cut_nodes(G, shortest, d, p, c):
         max_increase = 0
         curr_dist = d[t]
         first_connected = None
-        for u in shortest:
+        for i in range(len(shortest) - 1, -1, -1):
+            u = shortest[i]
             removed_edges = []
             for v in G.adj[u]:
                 w = G[u][v]['weight']
@@ -217,6 +233,115 @@ def cut_nodes(G, shortest, d, p, c):
     #print(nodes)
     #print(shortest)
     return nodes, shortest, d, p
+
+def cut_both(G, shortest, d, p, k, c):
+    t = max(G.nodes)
+    original = d[t]
+    #print(shortest)
+    edges = []
+    nodes = []
+    while k > 0 or c > 0:
+        #print(k, c)
+        #print(G.nodes)
+        #print(edges)
+        max_increase = 0
+        edge_inc = -1
+        node_inc = -1
+        curr_dist = d[t]
+        first_connected_e = None
+        first_index = 1000
+        if k > 0:
+            for i in range(len(shortest) - 1, 0, -1) :
+                u = shortest[i]
+                v = shortest[i - 1]
+                #print(u, v)
+                w = G[u][v]['weight']
+                G.remove_edge(u, v)
+                if not connected(G):
+                    G.add_edge(u, v, weight=w)
+                    continue
+                candidate_d, candidate_p = dijkstra(G)
+                if not first_connected_e:
+                    first_connected_e = (u, v)
+                    first_index = i
+                    first_e_d, first_e_p = candidate_d, candidate_p
+                if candidate_d[t] - curr_dist > max_increase:
+                    best_d, best_p = candidate_d, candidate_p
+                    best_e = (u, v)
+                    max_increase = candidate_d[t] - curr_dist
+                    edge_inc = max_increase
+                G.add_edge(u, v, weight=w)
+        first_connected_n = None
+        if c > 0:
+            for i in range(min(len(shortest) - 2, first_index), 0, -1):
+                u = shortest[i]
+                removed_edges = []
+                for v in G.adj[u]:
+                    w = G[u][v]['weight']
+                    removed_edges.append((u, v, w))
+                G.remove_node(u)
+                if not connected(G):
+                    G.add_node(u)
+                    for e in removed_edges:
+                        G.add_edge(e[0], e[1], weight=e[2])
+                    continue
+                candidate_d, candidate_p = dijkstra(G)
+                if not first_connected_n:
+                    first_connected_n = u
+                    first_n_d, first_n_p = candidate_d, candidate_p
+                if candidate_d[t] - curr_dist > max_increase:
+                    best_d, best_p = candidate_d, candidate_p
+                    best_node = u
+                    max_increase = candidate_d[t] - curr_dist
+                    node_inc = max_increase
+                G.add_node(u)
+                for e in removed_edges:
+                    G.add_edge(e[0], e[1], weight=e[2])
+
+        if max_increase > 0:
+            if edge_inc > node_inc:
+                edges.append(best_e)
+                G.remove_edge(best_e[0], best_e[1])
+                d, p = best_d, best_p
+                shortest = shortest_path(G, p)
+                k -= 1
+            else:
+                nodes.append(best_node)
+                G.remove_node(best_node)
+                d, p = best_d, best_p
+                shortest = shortest_path(G, p)
+                c -= 1
+        elif first_connected_e or first_connected_n:
+            if not first_connected_n:
+                edges.append(first_connected_e)
+                G.remove_edge(first_connected_e[0], first_connected_e[1])
+                d, p = first_e_d, first_e_p
+                shortest = shortest_path(G, p)
+                k -= 1
+            elif not first_connected_e:
+                nodes.append(first_connected_n)
+                G.remove_node(first_connected_n)
+                d, p = first_n_d, first_n_p
+                shortest = shortest_path(G, p)
+                c -= 1
+            else:
+                shortest_e = shortest_path(G, first_e_p)
+                shortest_n = shortest_path(G, first_n_p)
+                if len(shortest_e) >= len(shortest_n):
+                    edges.append(first_connected_e)
+                    G.remove_edge(first_connected_e[0], first_connected_e[1])
+                    d, p = first_e_d, first_e_p
+                    shortest = shortest_e
+                    k -= 1
+                else:
+                    nodes.append(first_connected_n)
+                    G.remove_node(first_connected_n)
+                    d, p = first_n_d, first_n_p
+                    shortest = shortest_n
+                    c -= 1
+        else:
+            break
+    return nodes, edges, shortest, d, p
         
 
 def mincut_solve(G):

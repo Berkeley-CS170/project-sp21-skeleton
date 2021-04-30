@@ -4,13 +4,13 @@ from utils import is_valid_solution, calculate_score
 import sys
 from os.path import basename, normpath
 import glob
-from solver import dijkstra, connected, weight, smart_greedy
+from solver import dijkstra, connected, weight, smart_greedy, mixed_greedy
 
 if __name__ == '__main__':
     assert len(sys.argv) == 2
     path = sys.argv[1]
     G = read_input_file(path)
-    edges, shortest = smart_greedy(G)
+    edges, shortest = smart_greedy(G)#mixed_greedy(G)
     """d, p = dijkstra(G)
     t = max(G.nodes)
     print(d[t])
