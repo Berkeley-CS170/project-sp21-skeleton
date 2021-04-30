@@ -4,7 +4,6 @@ from utils import is_valid_solution, calculate_score
 import sys
 from os.path import basename, normpath
 import glob
-from fibbonaciheap import FibonacciHeap as fib_heap
 from fibheap import *
 
 class GraphNode(Node):
