@@ -28,16 +28,16 @@ def solve(G):
         k = 100
     H = G.copy()
     #remove c most vital nodes
-    c_list = remove_c_nodes(H, c)
+    target = len(H) - 1
+    c_list = remove_c_nodes(H, c, target)
     #print(c_list)
     #remove k most vital edges
-    k_list = remove_k_edges(H, k)
+    k_list = remove_k_edges(H, k, target)
     #print(k_list)
     return c_list, k_list
 
-def remove_c_nodes(G, c):
+def remove_c_nodes(G, c, target):
     #O(cV^3) overall contribution
-    target = len(G) - 1
     c_list = []
     for i in range(c):
         node = remove_node(G, c, target)
@@ -65,17 +65,61 @@ def remove_node(G, c, target):
 
 
 
-def remove_k_edges(G, k):
+def remove_k_edges(G, k, target):
+    #### ALgorithm 1 ####
+    #fast algorithm but results are atrocious
     #store list of all edges in graph
     #then find edges in maximum spanning tree
     #remove edges from list of all edges
-    #afterwards, continue to remove edges until k_list is len(k) or less
-    #remove the
+    #afterwards, continue to remove edges in order of least weight
+    #until k_list is len(k) or less
     #(it would be less if the graph disconnects if we remove len(k) + 1 edges)
-    mst = tree.maximum_spanning_edges(G, data=False)
-    #print(list(mst))
+    #guarantees connectivity via maximum spanning tree
+    # k_list = []
+    # mst = tree.maximum_spanning_edges(G)
+    # G.remove_edges_from(mst)
+    # k_list = [(el[0], el[1]) for el in sorted(G.edges(data=True), key=lambda t: t[2].get('weight', 1))]
+    # k_list = k_list[:k]
+    ####################
+
+    #### ALgorithm 2 ####
+    #store list of all edges in graph
+    #then find edges in maximum spanning tree
+    #remove edges from list of all edges
+    #afterwards, continue to remove edges in order of how beneficial itd be to keep them
+    #until k_list is len(k) or less
+    #(it would be less if the graph disconnects if we remove len(k) + 1 edges)
+    #guarantees connectivity via maximum spanning tree
     k_list = []
-    return k_list
+    mst = tree.maximum_spanning_edges(G, data=False)
+    mst_list = list(mst)
+    max_remove = min(k, len(G.edges())-len(mst_list))
+    while len(k_list) < max_remove:
+        best = nx.shortest_path_length(G, source=0, target=target, weight='weight')
+        path = nx.shortest_path(G, source=0, target=target, weight='weight')
+        path_edges = [(path[i], path[i+1]) for i in range(len(path)-1)]
+        best_edge = (0, 0)
+        for edge in path_edges:
+            if edge not in mst_list and edge[::-1] not in mst_list:
+                G.remove_edge(*edge)
+                st = nx.shortest_path_length(G, source=0, target=target, weight='weight')
+                if st >= best:
+                    best = st
+                    best_edge = edge
+                G.add_edge(*edge)
+        if best_edge != (0, 0):
+            k_list.append(best_edge)
+            G.remove_edge(*best_edge)
+        else:
+            return k_list[:k]
+    ####################
+
+    #### ALgorithm 3 ####
+    #construct up using shortest s-t paths and minimum s-t cut
+    #algorithm from paper
+    
+    ####################
+    return k_list[:k]
 
 
 if __name__ == '__main__':
