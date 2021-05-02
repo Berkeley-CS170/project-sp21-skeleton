@@ -67,6 +67,10 @@ def remove_node(G, c, target):
 
 def remove_k_edges(G, k, target):
     #### ALgorithm 1 ####
+    # Small: ?
+    # Medium: ?
+    # Large: ?
+    # Rank: 133
     #fast algorithm but results are atrocious
     #store list of all edges in graph
     #then find edges in maximum spanning tree
@@ -82,7 +86,11 @@ def remove_k_edges(G, k, target):
     # k_list = k_list[:k]
     ####################
 
-    #### ALgorithm 2 ####
+    #### Algorithm 2 ####
+    # Small: 105.59667
+    # Medium: 209.58743666666663
+    # Large: ?
+    # Rank: 113
     #store list of all edges in graph
     #then find edges in maximum spanning tree
     #remove edges from list of all edges
@@ -90,23 +98,56 @@ def remove_k_edges(G, k, target):
     #until k_list is len(k) or less
     #(it would be less if the graph disconnects if we remove len(k) + 1 edges)
     #guarantees connectivity via maximum spanning tree
+    # k_list = []
+    # mst = tree.maximum_spanning_edges(G, data=False)
+    # mst_list = list(mst)
+    # max_remove = min(k, len(G.edges())-len(mst_list))
+    # while len(k_list) < max_remove:
+    #     best = nx.shortest_path_length(G, source=0, target=target, weight='weight')
+    #     path = nx.shortest_path(G, source=0, target=target, weight='weight')
+    #     path_edges = [(path[i], path[i+1]) for i in range(len(path)-1)]
+    #     best_edge = (0, 0)
+    #     for edge in path_edges:
+    #         if edge not in mst_list and edge[::-1] not in mst_list:
+    #             G.remove_edge(*edge)
+    #             st = nx.shortest_path_length(G, source=0, target=target, weight='weight')
+    #             if st >= best:
+    #                 best = st
+    #                 best_edge = edge
+    #             G.add_edge(*edge)
+    #     if best_edge != (0, 0):
+    #         k_list.append(best_edge)
+    #         G.remove_edge(*best_edge)
+    #     else:
+    #         return k_list[:k]
+    ####################
+
+    #### Algorithm 3 ####
+    # Small: 147.94377000000003
+    # Medium: 223.33226999999994
+    # Large: 359.34792666666687
+    # Rank:
+    #limited brute force by checking all edges along
+    #the shortest path and seeing which removal is optimum
+    #originally didn't attempt since I thought checking connectivity for every
+    #attempted edge removal would massively affect performance, but its not
+    #that much slower than Algorithm 2, and clearly more optimal
     k_list = []
-    mst = tree.maximum_spanning_edges(G, data=False)
-    mst_list = list(mst)
-    max_remove = min(k, len(G.edges())-len(mst_list))
+    max_remove = min(k, len(G.edges()))
     while len(k_list) < max_remove:
         best = nx.shortest_path_length(G, source=0, target=target, weight='weight')
         path = nx.shortest_path(G, source=0, target=target, weight='weight')
         path_edges = [(path[i], path[i+1]) for i in range(len(path)-1)]
         best_edge = (0, 0)
         for edge in path_edges:
-            if edge not in mst_list and edge[::-1] not in mst_list:
-                G.remove_edge(*edge)
+            G.remove_edge(*edge)
+            if nx.is_connected(G):
                 st = nx.shortest_path_length(G, source=0, target=target, weight='weight')
                 if st >= best:
                     best = st
                     best_edge = edge
-                G.add_edge(*edge)
+            G.add_edge(*edge)
+
         if best_edge != (0, 0):
             k_list.append(best_edge)
             G.remove_edge(*best_edge)
@@ -114,10 +155,19 @@ def remove_k_edges(G, k, target):
             return k_list[:k]
     ####################
 
-    #### ALgorithm 3 ####
+    #### ALgorithm 4 ####
     #construct up using shortest s-t paths and minimum s-t cut
     #algorithm from paper
-    
+
+    ####################
+
+    #### Algorithm 5####
+    #lp formulation for problem
+    #objective function:
+    #constraints:
+    #
+    #rounding:
+
     ####################
     return k_list[:k]
 
@@ -148,31 +198,3 @@ if __name__ == '__main__':
         print("Shortest Path Difference for {}: {}".format(filename, distance))
         write_output_file(G, c, k, output_path)
     print("Average Shortest Path Difference: {}".format(sum/total))
-
-
-# Here's an example of how to run your solver.
-
-# Usage: python3 solver.py test.in
-
-# if __name__ == '__main__':
-#     assert len(sys.argv) == 2
-#     path = sys.argv[1]
-#     G = read_input_file(path)
-#     c, k = solve(G)
-#     assert is_valid_solution(G, c, k)
-#     print("Shortest Path Difference: {}".format(calculate_score(G, c, k)))
-#     write_output_file(G, c, k, 'outputs/small-1.out')
-
-
-# For testing a folder of inputs to create a folder of outputs, you can use glob (need to import it)
-# if __name__ == '__main__':
-#     inputs = glob.glob('inputs/*')
-#     for input_path in inputs:
-#         filename = basename(normpath(input_path))[:-3]
-#         output_path = 'outputs/' + filename + '.out'
-#         G = read_input_file(input_path)
-#         c, k = solve(G)
-#         assert is_valid_solution(G, c, k)
-#         distance = calculate_score(G, c, k)
-#         print("Shortest Path Difference for {}: {}".format(filename, distance))
-#         write_output_file(G, c, k, output_path)
