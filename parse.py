@@ -88,11 +88,11 @@ def read_output_file(G, path):
     """
     H = G.copy()
     if len(H) >= 20 and len(H) <= 30:
-        max_cities = 2
+        max_cities = 1
         max_roads = 15
     elif len(H) > 30 and len(H) <= 50:
         max_cities = 3
-        max_roads = 30
+        max_roads = 50
     elif len(H) > 50 and len(H) <= 100:
         max_cities = 5
         max_roads = 100
