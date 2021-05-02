@@ -90,6 +90,8 @@ if __name__ == '__main__':
     assert len(sys.argv) == 2
     size = sys.argv[1]
     inputs = glob.glob('inputs/' + size + '/*')
+    total = 0
+    sum = 0
     for input_path in inputs:
         filename = basename(normpath(input_path))[:-3]
         output_path = 'outputs/' + size + '/' + filename + '.out'
@@ -97,8 +99,11 @@ if __name__ == '__main__':
         c, k = solve(G)
         assert is_valid_solution(G, c, k)
         distance = calculate_score(G, c, k)
+        total += 1
+        sum += distance
         print("Shortest Path Difference for {}: {}".format(filename, distance))
         write_output_file(G, c, k, output_path)
+    print("Average Shortest Path Difference: {}".format(sum/total))
 
 
 # Here's an example of how to run your solver.
