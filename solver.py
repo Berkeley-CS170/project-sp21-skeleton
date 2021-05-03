@@ -18,20 +18,21 @@ def solve(G):
         c: list of cities to remove
         k: list of edges to remove
     """
-    return simulatedAnnealing(0.5, G)
+    return simulatedAnnealing(0.9, G)
 
 
 def simulatedAnnealing(initialTreshold, G):
     G = G.copy()
+    endNode = len(G.nodes) - 1
     deletedEdges, deletedNodes = [], []
     def nodeRemover(threshold, nodesRemoved):
         if nodesRemoved > MAX_NODES_REMOVED or threshold >= 1:
             return
         largestYet, diff = None, 0 
         for i in G.nodes():
-            if i == 0 or i == len(G.nodes) - 1:
+            if i == 0 or i == endNode:
                 continue
-            currentDiff = node_diff(G, i)
+            currentDiff = node_diff(G, i, endNode)
             if currentDiff and random.random() > threshold:
                 largestYet = i
                 break
@@ -48,7 +49,7 @@ def simulatedAnnealing(initialTreshold, G):
             return
         largestYet, diff = None, 0 
         for i in G.edges():
-            currentDiff = edge_diff(G, i)
+            currentDiff = edge_diff(G, i, endNode)
             if currentDiff and random.random() > threshold:
                 largestYet = i
                 break
@@ -60,10 +61,10 @@ def simulatedAnnealing(initialTreshold, G):
             G.remove_edge(largestYet[0],largestYet[1])
         return edgeRemover(threshold + 0.01, edgesRemoved + 1)
 
-    edgeRemover(initialTreshold, 0)
-    nodeRemover(initialTreshold, 0)
     
-
+    nodeRemover(initialTreshold, 0)
+    edgeRemover(initialTreshold, 0)
+    
     print(deletedEdges, deletedNodes)
     return deletedNodes, deletedEdges
 
@@ -75,10 +76,18 @@ if __name__ == '__main__':
      assert len(sys.argv) == 2
      path = sys.argv[1]
      G = read_input_file(path)
-     c, k = solve(G)
-     assert is_valid_solution(G, c, k)
-     print("Shortest Path Difference: {}".format(calculate_score(G, c, k)))
+     resultc, resultk, largest = None, None, 0
+     for i in range(20):
+        c, k = solve(G)
+        if not is_valid_solution(G, c, k):
+            continue
+        currentScore = calculate_score(G, c, k)
+        if largest < currentScore:
+            resultc, resultk = c, k
+            largest = currentScore
+     print("Shortest Path Difference: {}".format(largest))
      write_output_file(G, c, k, 'outputs/small-1.out')
+     print("Reference Shortest Score: " + str(calculate_score(G, [1], [(0, 27), (24, 29), (26, 29), (20, 16)])))
 
 
 # For testing a folder of inputs to create a folder of outputs, you can use glob (need to import it)

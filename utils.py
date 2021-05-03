@@ -46,32 +46,30 @@ def calculate_score(G, c, k):
     difference = final_min_dist - original_min_dist
     return difference
 
-def edge_diff(G, edge):
+def edge_diff(G, edge, endNode):
     """
     Calculate the impact of removing a certain edge.
     """
     H = G.copy()
     if not nx.is_connected(H):
         return False
-    node_count = len(H.nodes)
-    original_min_dist = nx.dijkstra_path_length(H, 0, node_count-1)
+    original_min_dist = nx.dijkstra_path_length(H, 0, endNode)
     H.remove_edge(edge[0], edge[1])
     if not nx.is_connected(H):
         return False
-    new_min_dist = nx.dijkstra_path_length(H, 0, node_count-1)
+    new_min_dist = nx.dijkstra_path_length(H, 0, endNode)
     return original_min_dist - new_min_dist
 
-def node_diff(G, node):
+def node_diff(G, node, endNode):
     """
     Calculate the impact of removing a certain edge.
     """
     H = G.copy()
     if not nx.is_connected(H):
         return False
-    node_count = len(H.nodes)
-    original_min_dist = nx.dijkstra_path_length(H, 0, node_count-1)
+    original_min_dist = nx.dijkstra_path_length(H, 0, endNode)
     H.remove_node(node)
     if not nx.is_connected(H):
         return False
-    new_min_dist = nx.dijkstra_path_length(H, 0, node_count-1)
+    new_min_dist = nx.dijkstra_path_length(H, 0, endNode)
     return original_min_dist - new_min_dist
