@@ -147,22 +147,26 @@ def write_output_file(G, c, k, path):
         None
     """
     H = G.copy()
-
-    for road in k:
-        assert H.has_edge(road[0],road[1]), "{} is not a valid edge in graph G".format(road)
-    H.remove_edges_from(k)
     
-    for city in c:
-        assert H.has_node(city), "{} is not a valid node in graph G".format(city)
-    H.remove_nodes_from(c)
+    if k:
+        for road in k:
+            assert H.has_edge(road[0],road[1]), "{} is not a valid edge in graph G".format(road)
+        H.remove_edges_from(k)
+    
+    if c:
+        for city in c:
+            assert H.has_node(city), "{} is not a valid node in graph G".format(city)
+        H.remove_nodes_from(c)
 
     assert nx.is_connected(H), "The solution is invalid as the graph disconnects"
 
     with open(path, "w") as fo:
-        fo.write(str(len(c)) + "\n")
-        for city in c:
-            fo.write(str(city) + "\n")
-        fo.write(str(len(k)) + "\n")
-        for road in k:
-            fo.write(str(road[0]) + " " + str(road[1]) + "\n")
+        fo.write(str(len(c) if c else 0) + "\n")
+        if c:
+            for city in c:
+                fo.write(str(city) + "\n")
+        fo.write(str(len(k) if k else 0) + "\n")
+        if k:
+            for road in k:
+                fo.write(str(road[0]) + " " + str(road[1]) + "\n")
         fo.close()
