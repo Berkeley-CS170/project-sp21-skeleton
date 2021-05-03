@@ -18,46 +18,54 @@ def solve(G):
         c: list of cities to remove
         k: list of edges to remove
     """
-    pass
+    return simulatedAnnealing(0.5, G)
 
 
 def simulatedAnnealing(initialTreshold, G):
+    G = G.copy()
     deletedEdges, deletedNodes = [], []
     def nodeRemover(threshold, nodesRemoved):
-        if nodesRemoved > MAX_NODES_REMOVED:
+        if nodesRemoved > MAX_NODES_REMOVED or threshold >= 1:
             return
         largestYet, diff = None, 0 
         for i in G.nodes():
-            currentDiff = node_diff(i)
+            if i == 0 or i == len(G.nodes) - 1:
+                continue
+            currentDiff = node_diff(G, i)
             if currentDiff and random.random() > threshold:
                 largestYet = i
                 break
             elif currentDiff and currentDiff > diff:
                 largestYet = i
                 diff = currentDiff
-        deletedNodes.append(largestYet)
-        G.remove_node(largestYet)
+        if largestYet:
+            deletedNodes.append(largestYet)
+            G.remove_node(largestYet)
         return nodeRemover(threshold + 0.01, nodesRemoved + 1)
     
     def edgeRemover(threshold, edgesRemoved):
-        if edgesRemoved > MAX_EDGES_REMOVED:
+        if edgesRemoved > MAX_EDGES_REMOVED or threshold >= 1:
             return
         largestYet, diff = None, 0 
         for i in G.edges():
-            currentDiff = node_diff(i)
+            currentDiff = edge_diff(G, i)
             if currentDiff and random.random() > threshold:
                 largestYet = i
                 break
             elif currentDiff and currentDiff > diff:
                 largestYet = i
                 diff = currentDiff
-        deletedEdges.append(largestYet)
-        G.remove_edge(largestYet)
-        return nodeRemover(threshold + 0.01, edgesRemoved + 1)
+        if largestYet:
+            deletedEdges.append(largestYet)
+            G.remove_edge(largestYet[0],largestYet[1])
+        return edgeRemover(threshold + 0.01, edgesRemoved + 1)
+
+    edgeRemover(initialTreshold, 0)
+    nodeRemover(initialTreshold, 0)
     
-    nodeRemover(0.5, 0)
-    edgeRemover(0.5, 0)
-    return deletedEdges, deletedNodes
+
+    print(deletedEdges, deletedNodes)
+    return deletedNodes, deletedEdges
 
 # Here's an example of how to run your solver.
 

@@ -55,7 +55,9 @@ def edge_diff(G, edge):
         return False
     node_count = len(H.nodes)
     original_min_dist = nx.dijkstra_path_length(H, 0, node_count-1)
-    H.remove_edge(edge)
+    H.remove_edge(edge[0], edge[1])
+    if not nx.is_connected(H):
+        return False
     new_min_dist = nx.dijkstra_path_length(H, 0, node_count-1)
     return original_min_dist - new_min_dist
 
@@ -69,5 +71,7 @@ def node_diff(G, node):
     node_count = len(H.nodes)
     original_min_dist = nx.dijkstra_path_length(H, 0, node_count-1)
     H.remove_node(node)
+    if not nx.is_connected(H):
+        return False
     new_min_dist = nx.dijkstra_path_length(H, 0, node_count-1)
     return original_min_dist - new_min_dist
