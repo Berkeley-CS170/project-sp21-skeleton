@@ -26,15 +26,71 @@ def solve(G):
     elif len(G) > 50 and len(G) <= 100:
         c = 5
         k = 100
+
     H = G.copy()
-    #remove c most vital nodes
     target = len(H) - 1
+
+    #remove c most vital nodes
     c_list = remove_c_nodes(H, c, target)
-    #print(c_list)
     #remove k most vital edges
     k_list = remove_k_edges(H, k, target)
-    #print(k_list)
+
     return c_list, k_list
+
+def algorithm5(G, c, k, target):
+    #### Algorithm 5 ####
+    # Small: 67.23221000000001
+    # Medium: 113.87769666666665
+    # Large: 221.96333666666658
+    # Rank: ?
+    #limited brute force by checking all edges along
+    #the shortest path and nodes along shortest path
+
+    c_list, k_list = [], []
+
+    condition = True
+    while condition:
+        best_edge, best_node = (0, 0), -1
+
+        best = nx.shortest_path_length(G, source=0, target=target, weight='weight')
+        best_n, best_e = best, best
+        path = nx.shortest_path(G, source=0, target=target, weight='weight')
+
+        path_edges = [(path[i], path[i+1]) for i in range(len(path)-1)]
+
+        for node in path[1:-1]:
+            edges = list(G.edges(node))
+            G.remove_node(node)
+            if nx.is_connected(G):
+                new_length = nx.shortest_path_length(G, source=0, target=target, weight='weight')
+                if new_length >= best_n:
+                    best_n = new_length
+                    best_node = node
+            G.add_node(node)
+            G.add_edges_from(edges)
+
+        for edge in path_edges:
+            G.remove_edge(*edge)
+            if nx.is_connected(G):
+                new_length = nx.shortest_path_length(G, source=0, target=target, weight='weight')
+                if new_length >= best_e:
+                    best_e = new_length
+                    best_edge = edge
+            G.add_edge(*edge)
+
+        if len(c_list) < c and best_n >= best_e and best_node != -1:
+            c_list.append(best_node)
+            G.remove_node(best_node)
+
+        elif len(k_list) < k and best_e >= best_n and best_edge != (0, 0):
+            k_list.append(best_edge)
+            G.remove_edge(*best_edge)
+
+        else:
+            condition = False
+
+    return c_list[:c], k_list[:k]
+
 
 def remove_c_nodes(G, c, target):
     #O(cV^3) overall contribution
@@ -126,7 +182,7 @@ def remove_k_edges(G, k, target):
     # Small: 147.94377000000003
     # Medium: 223.33226999999994
     # Large: 359.34792666666687
-    # Rank:
+    # Rank: 96
     #limited brute force by checking all edges along
     #the shortest path and seeing which removal is optimum
     #originally didn't attempt since I thought checking connectivity for every
@@ -160,13 +216,6 @@ def remove_k_edges(G, k, target):
     #algorithm from paper
 
     ####################
-
-    #### Algorithm 5####
-    #lp formulation for problem
-    #objective function:
-    #constraints:
-    #
-    #rounding:
 
     ####################
     return k_list[:k]
