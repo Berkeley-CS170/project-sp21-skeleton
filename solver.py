@@ -18,7 +18,7 @@ def solve(G):
         c: list of cities to remove
         k: list of edges to remove
     """
-    return simulatedAnnealing(0.2, G)
+    return simulatedAnnealing(0.5, G)
 
 
 def simulatedAnnealing(initialTreshold, G):
@@ -36,7 +36,11 @@ def simulatedAnnealing(initialTreshold, G):
                 continue
             currentDiff = node_diff(G, i, endNode)
             if currentDiff and random.random() > threshold:
-                largestYet = i
+                if random.random() > 0.5 and deletedNodes:
+                    deletedNodes.remove(random.choice(deletedNodes))
+                    return nodeRemover(threshold - 0.001, nodesRemoved - 1)
+                else:
+                    largestYet = i
                 break
             elif currentDiff and currentDiff > diff:
                 largestYet = i
@@ -44,7 +48,7 @@ def simulatedAnnealing(initialTreshold, G):
         if largestYet:
             deletedNodes.append(largestYet)
             G.remove_node(largestYet)
-            return nodeRemover(threshold + 0.01, nodesRemoved + 1)
+            return nodeRemover(threshold + 0.001, nodesRemoved + 1)
     
     def edgeRemover(threshold, edgesRemoved):
         if edgesRemoved >= MAX_EDGES_REMOVED or threshold >= 1:
@@ -60,15 +64,20 @@ def simulatedAnnealing(initialTreshold, G):
         for i in edges:
             currentDiff = edge_diff(G, i, endNode)               
             if currentDiff and random.random() > threshold:
-                largestYet = i
+                if random.random() > 0.5 and deletedEdges:
+                    deletedEdges.remove(random.choice(deletedEdges))
+                    return edgeRemover(threshold - 0.001, edgesRemoved - 1)
+                else:
+                    largestYet = i
                 break
             elif currentDiff and currentDiff > diff:
                 largestYet = i
                 diff = currentDiff
+
         if largestYet:
             deletedEdges.append(largestYet)
             G.remove_edge(largestYet[0],largestYet[1])
-            return edgeRemover(threshold + 0.01, edgesRemoved + 1)
+            return edgeRemover(threshold + 0.001, edgesRemoved + 1)
 
     
     nodeRemover(initialTreshold, 0)
@@ -101,11 +110,11 @@ if __name__ == '__main__':
 
 # For testing a folder of inputs to create a folder of outputs, you can use glob (need to import it)
 if __name__ == '__main__':
-    for i in range(30):
-        inputs = glob.glob('inputs/small/*')
+    for i in range(1):
+        inputs = glob.glob('inputs/large/*')
         count = 1
         for input_path in inputs:
-            output_path = 'outputs/small/' + basename(normpath(input_path))[:-3] + '.out'
+            output_path = 'outputs/large/' + basename(normpath(input_path))[:-3] + '.out'
             G = read_input_file(input_path)
             resultc, resultk, largest = None, None, 0
             for i in range(5):
