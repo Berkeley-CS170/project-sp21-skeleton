@@ -18,7 +18,7 @@ def solve(G):
         c: list of cities to remove
         k: list of edges to remove
     """
-    return simulatedAnnealing(0.7, G)
+    return simulatedAnnealing(0.8, G)
 
 
 def simulatedAnnealing(initialTreshold, G):
@@ -94,25 +94,26 @@ if __name__ == '__main__':
 
 # For testing a folder of inputs to create a folder of outputs, you can use glob (need to import it)
 if __name__ == '__main__':
-    inputs = glob.glob('inputs/small/*')
-    count = 1
-    for input_path in inputs:
-        output_path = 'outputs/small/' + basename(normpath(input_path))[:-3] + '.out'
-        G = read_input_file(input_path)
-        resultc, resultk, largest = None, None, 0
-        for i in range(10):
-            c, k = solve(G)
-            if not is_valid_solution(G, c, k):
-                continue
-            currentScore = calculate_score(G, c, k)
-            if largest < currentScore:
-                resultc, resultk = c, k
-                largest = currentScore
+    for i in range(20):
+        inputs = glob.glob('inputs/medium/*')
+        count = 1
+        for input_path in inputs:
+            output_path = 'outputs/medium/' + basename(normpath(input_path))[:-3] + '.out'
+            G = read_input_file(input_path)
+            resultc, resultk, largest = None, None, 0
+            for i in range(5):
+                c, k = solve(G)
+                if not is_valid_solution(G, c, k):
+                    continue
+                currentScore = calculate_score(G, c, k)
+                if largest < currentScore:
+                    resultc, resultk = c, k
+                    largest = currentScore
 
-        existingSol = read_output_file(G, output_path)
-        if largest > existingSol:
-            write_output_file(G, resultc, resultk, output_path)
-            print("enhanced by: " + str(largest - existingSol))
-        print(str(count) + " out of " +str(len(inputs)) + " Done.")
-        count += 1
+            existingSol = read_output_file(G, output_path)
+            if largest > existingSol:
+                write_output_file(G, resultc, resultk, output_path)
+                print("enhanced by: " + str(largest - existingSol))
+            print(str(count) + " out of " +str(len(inputs)) + " Done.")
+            count += 1
         
