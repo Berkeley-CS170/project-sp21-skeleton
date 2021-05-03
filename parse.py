@@ -1,3 +1,4 @@
+
 import re
 import os
 
@@ -79,7 +80,6 @@ def write_input_file(G, path):
 def read_output_file(G, path):
     """
     Parses and validates an output file
-
     Args:
         G: input graph corresponding to input file
         path: str, path to output file
@@ -123,6 +123,8 @@ def read_output_file(G, path):
         number_of_roads = fo.readline().strip()
         assert number_of_roads.isdigit(), 'Number of roads is not a digit'
         number_of_roads = int(number_of_roads)
+        
+        assert number_of_roads <= max_roads, 'Too many roads being removed from input graph'
 
         for _ in range(number_of_roads):
             road = fo.readline().split()
@@ -138,7 +140,6 @@ def read_output_file(G, path):
 def write_output_file(G, c, k, path):
     """
     Writes the list of cities and roads to remove to an output file
-
     Args:
         G: input graph corresponding to input file
         c: list of cities (vertices)
@@ -147,26 +148,22 @@ def write_output_file(G, c, k, path):
         None
     """
     H = G.copy()
+
+    for road in k:
+        assert H.has_edge(road[0],road[1]), "{} is not a valid edge in graph G".format(road)
+    H.remove_edges_from(k)
     
-    if k:
-        for road in k:
-            assert H.has_edge(road[0],road[1]), "{} is not a valid edge in graph G".format(road)
-        H.remove_edges_from(k)
-    
-    if c:
-        for city in c:
-            assert H.has_node(city), "{} is not a valid node in graph G".format(city)
-        H.remove_nodes_from(c)
+    for city in c:
+        assert H.has_node(city), "{} is not a valid node in graph G".format(city)
+    H.remove_nodes_from(c)
 
     assert nx.is_connected(H), "The solution is invalid as the graph disconnects"
 
     with open(path, "w") as fo:
-        fo.write(str(len(c) if c else 0) + "\n")
-        if c:
-            for city in c:
-                fo.write(str(city) + "\n")
-        fo.write(str(len(k) if k else 0) + "\n")
-        if k:
-            for road in k:
-                fo.write(str(road[0]) + " " + str(road[1]) + "\n")
+        fo.write(str(len(c)) + "\n")
+        for city in c:
+            fo.write(str(city) + "\n")
+        fo.write(str(len(k)) + "\n")
+        for road in k:
+            fo.write(str(road[0]) + " " + str(road[1]) + "\n")
         fo.close()
