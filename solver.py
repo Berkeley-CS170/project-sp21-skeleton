@@ -94,10 +94,10 @@ if __name__ == '__main__':
 
 # For testing a folder of inputs to create a folder of outputs, you can use glob (need to import it)
 if __name__ == '__main__':
-    inputs = glob.glob('inputs/inputs/small/*')
+    inputs = glob.glob('inputs/inputs/large/*')
     count = 1
     for input_path in inputs:
-        output_path = 'outputs/small/' + basename(normpath(input_path))[:-3] + '.out'
+        output_path = 'outputs/large/' + basename(normpath(input_path))[:-3] + '.out'
         G = read_input_file(input_path)
         resultc, resultk, largest = None, None, 0
         for i in range(50):
