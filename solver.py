@@ -18,7 +18,7 @@ def solve(G):
         c: list of cities to remove
         k: list of edges to remove
     """
-    return simulatedAnnealing(0.8, G)
+    return simulatedAnnealing(0.2, G)
 
 
 def simulatedAnnealing(initialTreshold, G):
@@ -29,7 +29,9 @@ def simulatedAnnealing(initialTreshold, G):
         if nodesRemoved >= MAX_NODES_REMOVED or threshold >= 1:
             return
         largestYet, diff = None, 0 
-        for i in nx.dijkstra_path(G, 0, endNode):
+        allnodes = nx.dijkstra_path(G, 0, endNode)
+        random.shuffle(allnodes)
+        for i in allnodes:
             if i == 0 or i == endNode:
                 continue
             currentDiff = node_diff(G, i, endNode)
@@ -42,15 +44,20 @@ def simulatedAnnealing(initialTreshold, G):
         if largestYet:
             deletedNodes.append(largestYet)
             G.remove_node(largestYet)
-            return nodeRemover(threshold + 0.001, nodesRemoved + 1)
+            return nodeRemover(threshold + 0.01, nodesRemoved + 1)
     
     def edgeRemover(threshold, edgesRemoved):
         if edgesRemoved >= MAX_EDGES_REMOVED or threshold >= 1:
             return
         largestYet, diff = None, 0 
         previous = 0
-        for i in nx.dijkstra_path(G, 0, endNode)[1:]:
-            i, previous = (previous, i), i   
+        edges = []
+        for i in nx.dijkstra_path(G, 0, endNode)[1:]:              
+            edges.append((previous, i))
+            previous = i 
+
+        random.shuffle(edges)
+        for i in edges:
             currentDiff = edge_diff(G, i, endNode)               
             if currentDiff and random.random() > threshold:
                 largestYet = i
@@ -61,7 +68,7 @@ def simulatedAnnealing(initialTreshold, G):
         if largestYet:
             deletedEdges.append(largestYet)
             G.remove_edge(largestYet[0],largestYet[1])
-            return edgeRemover(threshold + 0.001, edgesRemoved + 1)
+            return edgeRemover(threshold + 0.01, edgesRemoved + 1)
 
     
     nodeRemover(initialTreshold, 0)
@@ -94,11 +101,11 @@ if __name__ == '__main__':
 
 # For testing a folder of inputs to create a folder of outputs, you can use glob (need to import it)
 if __name__ == '__main__':
-    for i in range(20):
-        inputs = glob.glob('inputs/medium/*')
+    for i in range(30):
+        inputs = glob.glob('inputs/small/*')
         count = 1
         for input_path in inputs:
-            output_path = 'outputs/medium/' + basename(normpath(input_path))[:-3] + '.out'
+            output_path = 'outputs/small/' + basename(normpath(input_path))[:-3] + '.out'
             G = read_input_file(input_path)
             resultc, resultk, largest = None, None, 0
             for i in range(5):
