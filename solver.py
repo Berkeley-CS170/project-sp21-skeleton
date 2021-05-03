@@ -100,7 +100,7 @@ if __name__ == '__main__':
         output_path = 'outputs/small/' + basename(normpath(input_path))[:-3] + '.out'
         G = read_input_file(input_path)
         resultc, resultk, largest = None, None, 0
-        for i in range(50):
+        for i in range(10):
             c, k = solve(G)
             if not is_valid_solution(G, c, k):
                 continue
