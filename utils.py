@@ -58,7 +58,7 @@ def edge_diff(G, edge, endNode):
     if not nx.is_connected(H):
         return False
     new_min_dist = nx.dijkstra_path_length(H, 0, endNode)
-    return original_min_dist - new_min_dist
+    return new_min_dist - original_min_dist
 
 def node_diff(G, node, endNode):
     """
@@ -72,4 +72,4 @@ def node_diff(G, node, endNode):
     if not nx.is_connected(H):
         return False
     new_min_dist = nx.dijkstra_path_length(H, 0, endNode)
-    return original_min_dist - new_min_dist
+    return new_min_dist - original_min_dist

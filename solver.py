@@ -25,6 +25,10 @@ def simulatedAnnealing(initialTreshold, G):
     G = G.copy()
     endNode = len(G.nodes) - 1
     deletedEdges, deletedNodes = [], []
+
+    def naiveDistribution(length):
+        return [1/length for i in range(length)]
+
     def nodeRemover(threshold, nodesRemoved):
         if nodesRemoved >= MAX_NODES_REMOVED or threshold >= 1:
             return
@@ -53,31 +57,23 @@ def simulatedAnnealing(initialTreshold, G):
     def edgeRemover(threshold, edgesRemoved):
         if edgesRemoved >= MAX_EDGES_REMOVED or threshold >= 1:
             return
-        largestYet, diff = None, 0 
         previous = 0
-        edges = []
+        edges, distribution, improvementScore = [], [], []
+        noPossibleUpdates = True
         for i in nx.dijkstra_path(G, 0, endNode)[1:]:              
             edges.append((previous, i))
+            distribution.append(G[previous][i]["weight"])
+            score = edge_diff(G, (previous, i), endNode)
+            if score:
+                noPossibleUpdates = False
+            improvementScore.append(score if score else 0)
             previous = i 
-
-        random.shuffle(edges)
-        for i in edges:
-            currentDiff = edge_diff(G, i, endNode)               
-            if currentDiff and random.random() > threshold:
-                if random.random() > 0.5 and deletedEdges:
-                    deletedEdges.remove(random.choice(deletedEdges))
-                    return edgeRemover(threshold - 0.001, edgesRemoved - 1)
-                else:
-                    largestYet = i
-                break
-            elif currentDiff and currentDiff > diff:
-                largestYet = i
-                diff = currentDiff
-
-        if largestYet:
-            deletedEdges.append(largestYet)
-            G.remove_edge(largestYet[0],largestYet[1])
-            return edgeRemover(threshold + 0.001, edgesRemoved + 1)
+        if noPossibleUpdates:
+            return 
+        chosenEdge = random.choices(edges, weights=improvementScore, k = 1)
+        deletedEdges.append(chosenEdge[0])
+        G.remove_edge(chosenEdge[0][0],chosenEdge[0][1])
+        return edgeRemover(threshold + 0.001, edgesRemoved + 1)
 
     
     nodeRemover(initialTreshold, 0)
@@ -111,10 +107,10 @@ if __name__ == '__main__':
 # For testing a folder of inputs to create a folder of outputs, you can use glob (need to import it)
 if __name__ == '__main__':
     for i in range(1):
-        inputs = glob.glob('inputs/large/*')
+        inputs = glob.glob('inputs/small/*')
         count = 1
         for input_path in inputs:
-            output_path = 'outputs/large/' + basename(normpath(input_path))[:-3] + '.out'
+            output_path = 'outputs/small/' + basename(normpath(input_path))[:-3] + '.out'
             G = read_input_file(input_path)
             resultc, resultk, largest = None, None, 0
             for i in range(5):
